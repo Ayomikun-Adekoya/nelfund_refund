@@ -53,14 +53,22 @@
 
       @if (!isset($student))
         {{-- Step 1: Enter Tracking ID --}}
-        <form method="POST" action="{{ route('refund.apply.verify') }}">
-          @csrf
-          <div class="mb-3">
-            <label for="tracking_id" class="form-label">Enter Your NELFUND Tracking ID</label>
-            <input type="text" class="form-control" name="tracking_id" id="tracking_id" placeholder="e.g. REF-1234XYZ" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Check Eligibility</button>
-        </form>
+        {{-- Step 1: Enter Tracking ID and Matric Number --}}
+<form method="POST" action="{{ route('refund.apply.verify') }}">
+  @csrf
+  <div class="mb-3">
+    <label for="tracking_id" class="form-label">Tracking ID</label>
+    <input type="text" class="form-control" name="tracking_id" id="tracking_id" placeholder="e.g. REF-1234XYZ" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="matric_number" class="form-label">Matric Number</label>
+    <input type="text" class="form-control" name="matric_number" id="matric_number" placeholder="e.g. 123456" required>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Check Eligibility</button>
+</form>
+
       @else
         {{-- Step 2: Refund Application Form --}}
         <h6 class="mb-3">Welcome {{ $student->full_name }} ({{ $student->matric_number }})</h6>

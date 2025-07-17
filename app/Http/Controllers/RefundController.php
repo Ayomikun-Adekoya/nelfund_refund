@@ -16,43 +16,56 @@ class RefundController extends Controller
         return view('check-status');
     }
 
-    // Handle tracking ID from check-status page
-  public function submitCheckForm(Request $request)
-{
-    $request->validate([
-        'tracking_id'   => 'required|string',
-        'matric_number' => 'required|string',
-    ]);
+    // Handle tracking ID and matric number from check-status page
+    public function submitCheckForm(Request $request)
+    {
+        $request->validate([
+            'tracking_id' => 'required|string',
+            'matric_number' => 'required|string',
+        ]);
 
-    // Look up refund application using both tracking ID and student matric number
-    $application = RefundApplication::where('tracking_id', $request->tracking_id)
-        ->whereHas('student', function ($query) use ($request) {
-            $query->where('matric_number', $request->matric_number);
-        })
-        ->first();
+        // Match both tracking ID and matric number
+        $loan = LoanApproval::where('tracking_id', $request->tracking_id)
+                            ->where('matric', $request->matric_number)
+                            ->first();
 
-    if (!$application) {
-        return back()->with('error', 'No matching application found for the provided Tracking ID and Matric Number.');
+        if (!$loan) {
+            return back()->with('error', 'No matching record found for the provided Tracking ID and Matric Number.');
+        }
+
+        // Find student using the matric number
+        $student = EligibleStudent::where('matric_number', $request->matric_number)->first();
+
+        if (!$student) {
+            return back()->with('error', 'You are not eligible for a refund.');
+        }
+
+        $application = RefundApplication::where('eligible_student_id', $student->id)->first();
+
+        if ($application) {
+            return redirect()->route('refund.status', ['student' => $student->id]);
+        }
+
+        return redirect()->route('refund.apply', ['student' => $student->id]);
     }
 
-    return redirect()->route('refund.status', ['student' => $application->eligible_student_id]);
-}
-
-
-    // ✅ New: verifyTrackingId before allowing application
+    // ✅ New: verify tracking ID and matric number before allowing application
     public function verifyTrackingId(Request $request)
     {
         $request->validate([
             'tracking_id' => 'required|string',
+            'matric_number' => 'required|string',
         ]);
 
-        $loan = LoanApproval::where('tracking_id', $request->tracking_id)->first();
+        $loan = LoanApproval::where('tracking_id', $request->tracking_id)
+                            ->where('matric', $request->matric_number)
+                            ->first();
 
         if (!$loan) {
-            return back()->with('error', 'Tracking ID not found.');
+            return back()->with('error', 'No matching record found for the provided Tracking ID and Matric Number.');
         }
 
-        $student = EligibleStudent::where('matric_number', $loan->matric)->first();
+        $student = EligibleStudent::where('matric_number', $request->matric_number)->first();
 
         if (!$student) {
             return back()->with('error', 'You are not eligible for a refund.');

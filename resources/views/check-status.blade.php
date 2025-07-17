@@ -3,59 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Check Status - Refund System</title>
+  <title>Check Refund Status - NELFUND Portal</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
 </head>
 <body>
+
   <header class="p-3 bg-primary text-white">
-    <div class="container">
-      <div class="d-flex flex-wrap align-items-center justify-content-between">
-        <a href="{{ url('/') }}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none h4">
-          <i class="bi bi-cash-coin me-2"></i> Refund Portal
-        </a>
-      </div>
+    <div class="container d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="bi bi-search me-2"></i>Check Refund Status</h4>
+      <a href="{{ url('/') }}" class="btn btn-light btn-sm">Go to Home</a>
     </div>
   </header>
 
   <main class="container mt-5">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Check Status</li>
-      </ol>
-    </nav>
-
-    @if(session('error'))
-      <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-    @if(session('success'))
-      <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <div class="card shadow-sm mb-5">
-      <div class="card-header">
-        <h3 class="h5 mb-0">Check Your Refund Application Status</h3>
-      </div>
-      <div class="card-body">
-        <form action="{{ route('check-status.submit') }}" method="POST" class="row g-3">
-          @csrf
-
-          <div class="col-md-6">
-            <label for="tracking_id" class="form-label">Tracking ID</label>
-            <input type="text" name="tracking_id" id="tracking_id" class="form-control" placeholder="e.g., AAA1AA1A1" required>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Track Your Refund Application</h5>
           </div>
+          <div class="card-body">
 
-          <div class="col-md-6">
-            <label for="matric_number" class="form-label">Matric Number</label>
-            <input type="text" name="matric_number" id="matric_number" class="form-control" placeholder="e.g., 739610" required>
-          </div>
+            @if(session('error'))
+              <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+            @if(session('success'))
+              <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
 
-          <div class="col-12 text-end">
-            <button type="submit" class="btn btn-primary">Check Status</button>
+            <form action="{{ route('check-status.submit') }}" method="POST">
+              @csrf
+
+              <div class="mb-3">
+                <label for="tracking_id" class="form-label">Tracking ID <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="tracking_id" name="tracking_id" placeholder="e.g., TRK-1234XYZ" value="{{ old('tracking_id') }}" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="matric_number" class="form-label">Matric Number <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="matric_number" name="matric_number" placeholder="e.g., 339910" value="{{ old('matric_number') }}" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-arrow-right-circle me-1"></i> Check Status
+              </button>
+            </form>
+
           </div>
-        </form>
+        </div>
       </div>
     </div>
   </main>
