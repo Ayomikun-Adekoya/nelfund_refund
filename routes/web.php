@@ -35,3 +35,4 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 // ✅ Admin routes (manually secured in the controller via session check)
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
 Route::patch('/admin/{id}', [AdminController::class, 'updateStatus'])->name('admin.update');
+Route::get('/admin/view/{id}', [AdminController::class, 'view'])->name('admin.view');
