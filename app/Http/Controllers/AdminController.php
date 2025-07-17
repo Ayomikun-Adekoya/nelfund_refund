@@ -53,4 +53,10 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Application status updated successfully.');
     }
+    public function view($id)
+{
+    $application = RefundApplication::with('student')->findOrFail($id);
+    return view('admin.view', compact('application'));
+}
+
 }
