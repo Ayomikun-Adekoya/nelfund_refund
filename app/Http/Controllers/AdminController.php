@@ -9,6 +9,8 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
+        // dd("here");
+
         // ✅ Check for admin session
         if (!session()->has('admin')) {
             return redirect()->route('admin.login')->with('error', 'Unauthorized access. Please login.');
@@ -21,7 +23,7 @@ class AdminController extends Controller
             $search = $request->input('search');
             $query->whereHas('student', function ($q) use ($search) {
                 $q->where('full_name', 'like', "%$search%")
-                  ->orWhere('matric_number', 'like', "%$search%");
+                    ->orWhere('matric_number', 'like', "%$search%");
             })->orWhere('tracking_id', 'like', "%$search%");
         }
 
@@ -35,7 +37,7 @@ class AdminController extends Controller
 
         $applications = $query->latest()->get();
 
-        return view('admin', compact('applications'));
+        return view('admin.dashboard', compact('applications'));
     }
 
     public function updateStatus(Request $request, $id)
@@ -54,9 +56,8 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Application status updated successfully.');
     }
     public function view($id)
-{
-    $application = RefundApplication::with('student')->findOrFail($id);
-    return view('admin.view', compact('application'));
-}
-
+    {
+        $application = RefundApplication::with('student')->findOrFail($id);
+        return view('admin.view', compact('application'));
+    }
 }

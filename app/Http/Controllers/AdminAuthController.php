@@ -13,15 +13,15 @@ class AdminAuthController extends Controller
     /**
      * Show the admin login form.
      */
-    public function showLoginForm()
+    public function index()
     {
-        return view('adminLogin');
+        return view('auth.index');
     }
 
     /**
      * Handle admin login form submission.
      */
-    public function login(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'email'    => 'required|email',
@@ -31,7 +31,7 @@ class AdminAuthController extends Controller
         //$admin = Admin::where('email', $request->email)->first();
         //Log::info('Admin detail '.  $admin);
 
-        if(Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
+        if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
             // ✅ Store only what you need
             Log::info('Login successful');
             $admin = Admin::where('email', $request->email)->first();
@@ -51,9 +51,10 @@ class AdminAuthController extends Controller
     /**
      * Log the admin out and clear session.
      */
-    public function logout()
+    public function destroy()
     {
         session()->forget(['admin_id', 'admin_name', 'admin_role']);
+        Auth::logout();
         return redirect()->route('admin.login')->with('success', 'Logged out successfully.');
     }
 }

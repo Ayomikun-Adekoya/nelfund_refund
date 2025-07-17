@@ -20,7 +20,6 @@ class AdminFactory extends Factory
             //using create admin migration
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            'password' => $this->faker->password(),
         ];
     }
 }

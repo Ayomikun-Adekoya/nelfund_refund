@@ -19,10 +19,20 @@ class Admin extends Authenticatable
         return 'id';
     }
     protected $fillable = [
-        'name', 'email', 'password', 'role'
+        'name',
+        'email',
+        'password',
+        'role'
     ];
 
     protected $hidden = [
         'password',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+        ];
+    }
 }

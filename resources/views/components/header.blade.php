@@ -18,7 +18,7 @@
             <div class="d-flex align-items-center gap-3">
                 @if (session('admin_name'))
                     <span>Welcome, {{ session('admin_name') }}</span>
-                    <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-light">Logout</button>
                     </form>
@@ -27,8 +27,12 @@
             </div>
         </div>
     </header>
-
-    {{ $slot }}
+    <div class="container-fluid">
+        <div class="row">
+            <x-navbar />
+            {{ $slot }}
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

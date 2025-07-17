@@ -28,11 +28,13 @@ Route::get('/status/{student}', function ($student) {
 })->name('refund.status');
 
 // Admin Login & Auth
-Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
-Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+Route::get('/admin', [AdminAuthController::class, 'index'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'store'])->name('admin.login.submit');
+Route::post('/admin/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
-// ✅ Admin routes (manually secured in the controller via session check)
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+// Admin routes (manually secured in the controller via session check)
+Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/applications', fn() => view("admin.application"))->name('admin.applications');
+Route::get('/admin/upload', fn() => view("admin.upload"))->name('admin.upload');
 Route::patch('/admin/{id}', [AdminController::class, 'updateStatus'])->name('admin.update');
 Route::get('/admin/view/{id}', [AdminController::class, 'view'])->name('admin.view');
