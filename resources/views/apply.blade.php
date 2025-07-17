@@ -23,7 +23,7 @@
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Apply for Refund</li>
+      <li class="breadcrumb-item active" aria-current="page">Request for Refund</li>
     </ol>
   </nav>
 
@@ -47,7 +47,7 @@
 
   <div class="card shadow-sm">
     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">Refund Application</h5>
+      <h5 class="mb-0">Refund Request</h5>
     </div>
     <div class="card-body">
 
@@ -84,7 +84,18 @@
             <label class="form-label">Eligible Refund Amount</label>
             <input type="text" class="form-control" value="₦{{ number_format($student->refund_amount, 2) }}" readonly>
           </div>
-
+                    <div class="mb-3">
+            <label class="form-label">Loan Amount</label>
+            <input type="text" class="form-control" value="₦{{ number_format($student->loanamount, 2) }}" readonly>
+          </div>
+                    <div class="mb-3">
+            <label class="form-label">Levies</label>
+            <input type="text" class="form-control" value="₦{{ number_format($student->levies, 2) }}" readonly>
+          </div>
+                    <div class="mb-3">
+            <label class="form-label">Amount Paid</label>
+            <input type="text" class="form-control" value="₦{{ number_format($student->amountpaid, 2) }}" readonly>
+          </div>
           <div class="mb-3">
             <label for="account_name" class="form-label">Account Name</label>
             <input type="text" class="form-control" name="account_name" id="account_name" required>

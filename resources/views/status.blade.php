@@ -39,6 +39,9 @@
           <li class="list-group-item"><strong>Department:</strong> {{ $student->department }}</li>
           <li class="list-group-item"><strong>Level:</strong> {{ $student->level }}</li>
           <li class="list-group-item"><strong>Faculty:</strong> {{ $student->faculty }}</li>
+          <li class="list-group-item"><strong>Loan Amount:</strong> ₦{{number_format ($student->loanamount) }}</li>
+          <li class="list-group-item"><strong>Levies:</strong> ₦{{number_format ($student->levies)}}</li>
+          <li class="list-group-item"><strong>Amount Paid:</strong> ₦{{number_format ($student->amountpaid) }}</li>
         </ul>
 
 <h5 class="mb-3">Application Details</h5>

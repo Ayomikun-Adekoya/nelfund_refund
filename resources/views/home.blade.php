@@ -39,7 +39,7 @@
                   Start a new application to request a refund. The process is simple and quick.
                 </p>
                 <a href="{{ route('refund.apply.form') }}" class="btn btn-primary mt-auto">
-                  <i class="bi bi-pencil-square me-2"></i>Apply for Refund
+                  <i class="bi bi-pencil-square me-2"></i>Request for Refund
                 </a>
               </div>
             </div>
