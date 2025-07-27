@@ -15,7 +15,7 @@ class AdminAuthController extends Controller
      */
     public function showLoginForm()
     {
-        return view('adminLogin');
+        return view('admin.adminLogin');
     }
 
     /**
@@ -23,28 +23,35 @@ class AdminAuthController extends Controller
      */
     public function login(Request $request)
     {
+        // Validate form input
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required',
         ]);
 
-        //$admin = Admin::where('email', $request->email)->first();
-        //Log::info('Admin detail '.  $admin);
+        // Use input() instead of dynamic properties to avoid linter warnings
+        $email = $request->input('email');
+        $password = $request->input('password');
 
-        if(Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])) {
-            // ✅ Store only what you need
+        // Attempt login
+        if (Auth::guard('admin')->attempt(['email' => $email, 'password' => $password])) {
             Log::info('Login successful');
-            $admin = Admin::where('email', $request->email)->first();
+
+            // Fetch the authenticated admin user
+            $admin = Admin::where('email', $email)->first();
+
+            // Set session data
             session([
-                'admin'   => 'admin',
-                'admin_id'   => $admin->id,
-                'admin_name' => $admin->name,
-                'admin_role' => $admin->role, // 'approver' or 'viewer'
+                'admin'       => 'admin',
+                'admin_id'    => $admin->id,
+                'admin_name'  => $admin->name,
+                'admin_role'  => $admin->role, // e.g., 'approver' or 'disburser'
             ]);
 
             return redirect()->route('admin.dashboard');
         }
 
+        // If login fails
         return back()->with('error', 'Invalid login credentials.');
     }
 
@@ -53,7 +60,9 @@ class AdminAuthController extends Controller
      */
     public function logout()
     {
-        session()->forget(['admin_id', 'admin_name', 'admin_role']);
+        // Clear admin session
+        session()->forget(['admin', 'admin_id', 'admin_name', 'admin_role']);
+
         return redirect()->route('admin.login')->with('success', 'Logged out successfully.');
     }
 }

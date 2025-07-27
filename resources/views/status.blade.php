@@ -39,47 +39,64 @@
           <li class="list-group-item"><strong>Department:</strong> {{ $student->department }}</li>
           <li class="list-group-item"><strong>Level:</strong> {{ $student->level }}</li>
           <li class="list-group-item"><strong>Faculty:</strong> {{ $student->faculty }}</li>
-          <li class="list-group-item"><strong>Loan Amount:</strong> ₦{{number_format ($student->loanamount) }}</li>
-          <li class="list-group-item"><strong>Levies:</strong> ₦{{number_format ($student->levies)}}</li>
-          <li class="list-group-item"><strong>Amount Paid:</strong> ₦{{number_format ($student->amountpaid) }}</li>
+
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-4"><strong>Nelfund Loan Amount:</strong> ₦{{ number_format($student->loanamount) }}</div>
+              <div class="col-md-4"><strong>School Levies:</strong> ₦{{ number_format($student->levies) }}</div>
+              <div class="col-md-4"><strong>Amount Paid Before Disbursement:</strong> ₦{{ number_format($student->amountpaid) }}</div>
+            </div>
+          </li>
         </ul>
 
-<h5 class="mb-3">Application Details</h5>
-@if ($application)
-  <ul class="list-group">
-    <li class="list-group-item"><strong>Tracking ID:</strong> {{ $application->tracking_id }}</li>
-    <li class="list-group-item"><strong>Account Name:</strong> {{ $application->account_name }}</li>
-    <li class="list-group-item"><strong>Account Number:</strong> {{ $application->account_number }}</li>
-    <li class="list-group-item"><strong>Bank:</strong> {{ $application->bank_name }}</li>
-    <li class="list-group-item"><strong>Submitted On:</strong> {{ $application->created_at->format('d M Y, h:i A') }}</li>
+        <h5 class="mb-3">Application Details</h5>
+        @if ($application)
+          <ul class="list-group">
+            <li class="list-group-item"><strong>Tracking ID:</strong> {{ $application->tracking_id }}</li>
+            <li class="list-group-item"><strong>Account Name:</strong> {{ $application->account_name }}</li>
+            <li class="list-group-item"><strong>Account Number:</strong> {{ $application->account_number }}</li>
+            <li class="list-group-item"><strong>Bank:</strong> {{ $application->bank_name }}</li>
+            <li class="list-group-item"><strong>Submitted On:</strong> {{ $application->created_at->format('d M Y, h:i A') }}</li>
 
-    {{-- ✅ Refund Amount --}}
-    <li class="list-group-item">
-      <strong>Refund Amount:</strong>
-      ₦{{ number_format($student->refund_amount, 2) }}
-    </li>
+            <li class="list-group-item"><strong>Refund Amount:</strong> ₦{{ number_format($student->refund_amount, 2) }}</li>
 
-    <li class="list-group-item">
-      <strong>Status:</strong>
-      @if ($application->status === 'approved')
-        <span class="badge bg-success">Approved</span>
-      @elseif ($application->status === 'declined')
-        <span class="badge bg-danger">Declined</span>
-      @else
-        <span class="badge bg-warning text-dark">Submitted</span>
-      @endif
-    </li>
-    <li class="list-group-item">
-      <strong>Proof of Payment:</strong>
-      <a href="{{ asset('storage/' . $application->proof_file) }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
-        View File
-      </a>
-    </li>
-  </ul>
-@else
-  <div class="alert alert-info">No refund application found.</div>
-@endif
+<li class="list-group-item d-flex align-items-center">
+  <strong class="me-2">Status:</strong>
 
+  @switch($application->status)
+    @case('approved')
+      <span class="badge bg-success">Approved</span>
+      <small class="text-muted ms-2">Application approved, awaiting disbursement.</small>
+      @break
+
+    @case('declined')
+      <span class="badge bg-danger">Declined</span>
+      <small class="text-muted ms-2">Application rejected by admin.</small>
+      @break
+
+    @case('disbursed')
+      <span class="badge bg-info text-white">Disbursed</span>
+      <small class="text-muted ms-2">Refund has been sent to your account.</small>
+      @break
+
+    @default
+      <span class="badge bg-warning text-dark">Submitted</span>
+      <small class="text-muted ms-2">Awaiting review from the admin.</small>
+  @endswitch
+</li>
+
+
+
+            <li class="list-group-item">
+              <strong>Proof of Payment:</strong>
+              <a href="{{ asset('storage/' . $application->proof_file) }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                View File
+              </a>
+            </li>
+          </ul>
+        @else
+          <div class="alert alert-info">No refund application found.</div>
+        @endif
       </div>
     </div>
   </main>

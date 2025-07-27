@@ -37,15 +37,18 @@
             <form action="{{ route('check-status.submit') }}" method="POST">
               @csrf
 
-              <div class="mb-3">
-                <label for="tracking_id" class="form-label">Tracking ID <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="tracking_id" name="tracking_id" placeholder="e.g., TRK-1234XYZ" value="{{ old('tracking_id') }}" required>
-              </div>
 
               <div class="mb-3">
                 <label for="matric_number" class="form-label">Matric Number <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="matric_number" name="matric_number" placeholder="e.g., 339910" value="{{ old('matric_number') }}" required>
               </div>
+
+              <div class="mb-3">
+                <label for="tracking_id" class="form-label">Tracking ID <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="tracking_id" name="tracking_id" placeholder="e.g., TRK-1234XYZ" value="{{ old('tracking_id') }}" required>
+              </div>
+
+
 
               <button type="submit" class="btn btn-primary w-100">
                 <i class="bi bi-arrow-right-circle me-1"></i> Check Status

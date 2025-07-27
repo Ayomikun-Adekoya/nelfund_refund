@@ -24,7 +24,6 @@ class RefundController extends Controller
             'matric_number' => 'required|string',
         ]);
 
-        // Match both tracking ID and matric number
         $loan = LoanApproval::where('tracking_id', $request->tracking_id)
                             ->where('matric', $request->matric_number)
                             ->first();
@@ -33,7 +32,6 @@ class RefundController extends Controller
             return back()->with('error', 'No matching record found for the provided Tracking ID and Matric Number.');
         }
 
-        // Find student using the matric number
         $student = EligibleStudent::where('matric_number', $request->matric_number)->first();
 
         if (!$student) {
@@ -49,7 +47,7 @@ class RefundController extends Controller
         return redirect()->route('refund.apply', ['student' => $student->id]);
     }
 
-    // ✅ New: verify tracking ID and matric number before allowing application
+    // ✅ Updated: verify tracking ID and allow reapplication if last was declined
     public function verifyTrackingId(Request $request)
     {
         $request->validate([
@@ -71,9 +69,11 @@ class RefundController extends Controller
             return back()->with('error', 'You are not eligible for a refund.');
         }
 
-        $application = RefundApplication::where('eligible_student_id', $student->id)->first();
+        $application = RefundApplication::where('eligible_student_id', $student->id)
+                                        ->latest()
+                                        ->first();
 
-        if ($application) {
+        if ($application && $application->status !== 'declined') {
             return redirect()->route('refund.status', ['student' => $student->id])
                 ->with('success', 'You have already applied. Redirected to status page.');
         }
@@ -88,7 +88,7 @@ class RefundController extends Controller
         return view('apply', compact('student'));
     }
 
-    // Submit refund application
+    // ✅ Updated: prevent submitting multiple "submitted" applications
     public function submitApplication(Request $request, $studentId)
     {
         $request->validate([
@@ -98,8 +98,17 @@ class RefundController extends Controller
             'proof_file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $filePath = $request->file('proof_file')->store('proofs', 'public');
+        // Block repeat submission if one is already pending
+        $existing = RefundApplication::where('eligible_student_id', $studentId)
+                                     ->where('status', 'submitted')
+                                     ->first();
 
+        if ($existing) {
+            return redirect()->route('refund.status', $studentId)
+                ->with('error', 'You already have a pending application.');
+        }
+
+        $filePath = $request->file('proof_file')->store('proofs', 'public');
         $trackingId = 'REF-' . strtoupper(Str::random(10));
 
         RefundApplication::create([

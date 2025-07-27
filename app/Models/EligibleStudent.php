@@ -25,9 +25,9 @@ class EligibleStudent extends Model
     {
         return $this->belongsTo(LoanApproval::class, 'matric_number', 'matric');
     }
-    public function getRefundAmountAttribute()
+public function getRefundAmountAttribute()
 {
-    return ($this->loanamount - $this->levies) + $this->amountpaid;
+    return ($this->getAttribute('loanamount') - $this->getAttribute('levies')) + $this->getAttribute('amountpaid');
 }
 
 }

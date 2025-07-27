@@ -28,8 +28,14 @@
     <main class="container mt-5">
       <div class="bg-light p-5 rounded text-center shadow-sm">
         <h1 class="display-4">Welcome to the NELFUND LOAN Refund Portal</h1>
-        <p class="lead text-muted"></p>
+        <p class="lead text-muted">Easily apply for your refund or check the status of your submission.</p>
+
+<div class="alert alert-secondary text-start mt-4">
+  <strong>Eligibility Notice:</strong> You may apply for a refund if you have made <strong>full or partial payment</strong> toward your levies.
+</div>
+
         <hr class="my-4" />
+
         <div class="row g-3 justify-content-center">
           <div class="col-md-5">
             <div class="card h-100">
@@ -58,8 +64,6 @@
             </div>
           </div>
         </div>
-      </div>
-        </form>
       </div>
     </main>
 
