@@ -13,7 +13,7 @@ use Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-
+use Illuminate\Support\Facades\Response;
 
 
 class AdminController extends Controller
@@ -35,6 +35,19 @@ class AdminController extends Controller
         $application = RefundApplication::with('student')->findOrFail($id);
         return view('admin.view', compact('application'));
     }
+
+    // 🔹 Export to PDF
+public function exportReportPDF(Request $request)
+{
+    $this->authorizeAdmin();
+
+    $applications = $this->filterApplications($request);
+
+    $pdf = Pdf::loadView('admin.report-pdf', compact('applications'))
+              ->setPaper('a4', 'landscape');
+
+    return $pdf->download('loan_refund_full_report.pdf');
+}
 
 public function uploadStudentsSubmit(Request $request)
 {
@@ -154,17 +167,23 @@ public function downloadSampleTemplate()
 }
 
     // 🔹 Update application status
-    public function updateStatus(Request $request, $id)
-    {
-        $this->authorizeAdmin();
+  public function updateStatus(Request $request, $id)
+{
+    $this->authorizeAdmin();
 
-        $request->validate(['action' => 'required|in:approve,decline']);
-        $application = RefundApplication::findOrFail($id);
-        $application->status = $request->action === 'approve' ? 'approved' : 'declined';
-        $application->save();
+    $request->validate(['action' => 'required|in:approve,decline']);
+    $application = RefundApplication::findOrFail($id);
 
-        return redirect()->back()->with('success', 'Application status updated.');
+    $application->status = $request->action === 'approve' ? 'approved' : 'declined';
+
+    if ($request->action === 'approve') {
+        $application->approved_at = now(); // ✅ Set approval timestamp
     }
+
+    $application->save();
+
+    return redirect()->back()->with('success', 'Application status updated.');
+}
 
     // 🔹 Reports Page
     public function reports(Request $request)
@@ -176,65 +195,101 @@ public function downloadSampleTemplate()
     }
 
     // 🔹 Export to Excel
-    public function exportReportExcel(Request $request)
-    {
-        $this->authorizeAdmin();
-        $applications = $this->filterApplications($request);
+public function exportReportExcel(Request $request)
+{
+    $applications = RefundApplication::with('student')->latest()->get();
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Refund Report');
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Refund Report');
 
-        $headers = [
-            'Full Name', 'Matric Number', 'Department', 'Faculty', 'Level',
-            'Loan Amount (₦)', 'Levies (₦)', 'Amount Paid (₦)', 'Refund Amount (₦)',
-            'Tracking ID', 'Account Name', 'Account Number', 'Bank',
-            'Status', 'Submitted On'
-        ];
-        $sheet->fromArray($headers, null, 'A1');
+    // Define the headers
+    $headers = [
+        'Full Name', 'Matric No', 'Department', 'Level', 'Faculty',
+        'Loan Amount', 'Levies', 'Amount Paid', 'Refund',
+        'Tracking ID', 'Account Name', 'Account Number', 'Bank',
+        'Sort Code', 'Phone', 'Email', 'Hostel',
+        'Submitted At', 'Approved At', 'Disbursed At', 'Status'
+    ];
+    $sheet->fromArray($headers, null, 'A1');
 
-        $row = 2;
-        foreach ($applications as $app) {
-            $sheet->fromArray([
-                strtoupper($app->student->full_name),
-                $app->student->matric_number,
-                ucwords($app->student->department),
-                ucwords($app->student->faculty),
-                $app->student->level,
-                number_format($app->student->loanamount, 2),
-                number_format($app->student->levies, 2),
-                number_format($app->student->amountpaid, 2),
-                number_format($app->student->refund_amount, 2),
-                $app->tracking_id,
-                $app->account_name,
-                $app->account_number,
-                $app->bank_name,
-                strtoupper($app->status),
-                $app->created_at->format('d M Y, h:i A')
-            ], null, 'A' . $row++);
-        }
+    // Bank Sort Codes (hardcoded)
+    $sortCodes = [
+        'Access Bank plc' => '044',
+        'Alpha Morgan Bank' => '108',
+        'Citibank Nigeria Ltd' => '023',
+        'Ecobank Nigeria Plc' => '050',
+        'Fidelity Bank Plc' => '070',
+        'First Bank Nigeria Ltd' => '011',
+        'First City Monument Bank Plc' => '214',
+        'Globus Bank Ltd' => '103',
+        'Guaranty Trust Bank Plc' => '058',
+        'Jaiz Bank Plc' => '301',
+        'Keystone Bank Ltd' => '082',
+        'Lotus Bank' => '303',
+        'Nova Commercial Bank Ltd' => '461',
+        'Polaris Bank Plc' => '076',
+        'Premium Trust Bank' => '105',
+        'Providus Bank Ltd' => '101',
+        'Signature Bank Ltd' => '106',
+        'Stanbic IBTC Bank Plc' => '221',
+        'Standard Chartered Bank Nigeria Ltd' => '068',
+        'Sterling Bank' => '232',
+        'SunTrust Bank Nigeria Ltd' => '100',
+        'Taj Bank' => '626',
+        'Titan Trust Bank Ltd' => '102',
+        'Union Bank of Nigeria Plc' => '032',
+        'United Bank for Africa Plc' => '033',
+        'Unity Bank Plc' => '215',
+        'Wema Bank Plc' => '035',
+        'Zenith Bank Plc' => '057',
+    ];
 
-        foreach (range('A', $sheet->getHighestColumn()) as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'refund-report.xlsx';
-        $tempFile = tempnam(sys_get_temp_dir(), $filename);
-        $writer->save($tempFile);
-
-        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+    // Fill the sheet with data
+    $row = 2;
+    foreach ($applications as $app) {
+        $bankName = $app->bank_name;
+        $sheet->fromArray([
+            $app->student->full_name,
+            $app->student->matric_number,
+            $app->student->department,
+            $app->student->level,
+            $app->student->faculty,
+            $app->student->loanamount,
+            $app->student->levies,
+            $app->student->amountpaid,
+            $app->student->refund_amount,
+            $app->tracking_id,
+            $app->account_name,
+            $app->account_number,
+            $bankName,
+            $sortCodes[$bankName] ?? 'N/A',
+            $app->phone,
+            $app->email,
+            $app->hostel,
+            optional($app->submitted_at)->format('d M Y, h:i A'),
+            optional($app->approved_at)->format('d M Y, h:i A'),
+            optional($app->disbursed_at)->format('d M Y, h:i A'),
+            ucfirst($app->status),
+        ], null, 'A' . $row++);
     }
 
-    // 🔹 Export to PDF
-    public function exportReportPDF(Request $request)
-    {
-        $applications = $this->filterApplications($request);
-        $pdf = Pdf::loadView('admin.report-pdf', compact('applications'))
-                  ->setPaper('a4', 'landscape');
-
-        return $pdf->download('loan_refund_full_report.pdf');
+    // Auto-size columns for better layout
+    foreach (range('A', $sheet->getHighestColumn()) as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
     }
+
+    // Output
+    $writer = new Xlsx($spreadsheet);
+    $filename = 'loan_refund_report_' . now()->format('Ymd_His') . '.xlsx';
+
+    $tempPath = tempnam(sys_get_temp_dir(), $filename);
+    $writer->save($tempPath);
+
+    return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
+}
+
+
 
     // 🔹 Export to CSV
     public function exportReportCSV()
@@ -283,12 +338,12 @@ public function downloadSampleTemplate()
 {
     $this->authorizeApprover();
 
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:admins,email',
-        'password' => 'required|string|min:6',
-        'role' => 'required|in:viewer,approver,disburser', // ✅ Fixed here
-    ]);
+$request->validate([
+    'name' => 'required|string|max:255',
+    'email' => 'required|email|unique:admins,email',
+    'password' => 'required|string|min:6',
+    'role' => 'required|in:viewer,approver,disburser,superadmin', // Added superadmin
+]);
 
     Admin::create([
         'name' => $request->name,
@@ -359,24 +414,27 @@ private function authorizeAdmin()
 }
 
 
-    private function authorizeApprover()
-    {
-        $this->authorizeAdmin();
-        if (session('admin_role') !== 'approver') {
-            abort(403, 'Insufficient permission.');
-        }
-    } 
-
-    private function authorizeDisburser()
+private function authorizeApprover()
 {
     $this->authorizeAdmin();
-    if (session('admin_role') !== 'disburser') {
-        abort(403, 'Only disbursers can perform this action.');
+    $role = session('admin_role');
+    if (!in_array($role, ['approver', 'superadmin'])) {
+        abort(403, 'You do not have permission to approve applications.');
+    }
+}
+
+private function authorizeDisburser()
+{
+    $this->authorizeAdmin();
+    $role = session('admin_role');
+    if (!in_array($role, ['disburser', 'superadmin'])) {
+        abort(403, 'You do not have permission to disburse applications.');
     }
 }
 
 
-    public function markAsDisbursed($id)
+
+  public function markAsDisbursed($id)
 {
     $this->authorizeDisburser();
 
@@ -386,10 +444,12 @@ private function authorizeAdmin()
     }
 
     $application->status = 'disbursed';
+    $application->disbursed_at = now(); // ✅ Set disbursement timestamp
     $application->save();
 
     return back()->with('success', 'Application marked as disbursed.');
 }
+
 
 public function handleBulkAction(Request $request)
 {
@@ -412,17 +472,20 @@ if ($request->action === 'approve') {
 
         if (!$application) continue;
 
-        if ($request->action === 'approve' && $application->status === 'submitted') {
-            $application->status = 'approved';
-            $application->save();
-            $updated++;
-        }
+if ($request->action === 'approve' && $application->status === 'submitted') {
+    $application->status = 'approved';
+    $application->approved_at = now(); // ✅ Timestamp
+    $application->save();
+    $updated++;
+}
 
-        if ($request->action === 'disburse' && $application->status === 'approved') {
-            $application->status = 'disbursed';
-            $application->save();
-            $updated++;
-        }
+if ($request->action === 'disburse' && $application->status === 'approved') {
+    $application->status = 'disbursed';
+    $application->disbursed_at = now(); // ✅ Timestamp
+    $application->save();
+    $updated++;
+}
+
     }
 
     return back()->with('success', "$updated applications updated successfully.");

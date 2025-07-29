@@ -44,8 +44,8 @@
               </div>
 
               <div class="mb-3">
-                <label for="tracking_id" class="form-label">Tracking ID <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="tracking_id" name="tracking_id" placeholder="e.g., TRK-1234XYZ" value="{{ old('tracking_id') }}" required>
+                <label for="tracking_id" class="form-label">NELFUND Tracking ID <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="tracking_id" name="tracking_id" placeholder="e.g., A1AA11A11" value="{{ old('tracking_id') }}" required>
               </div>
 
 

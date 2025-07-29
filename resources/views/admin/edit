@@ -42,7 +42,7 @@
   </form>
 
   {{-- Bulk Action Form --}}
-<form method="POST" action="{{ route('admin.bulk.action') }}" id="bulkForm">
+  <form method="POST" action="{{ route('admin.bulk.action') }}" id="bulkForm">
     @csrf
     <input type="hidden" name="action" id="bulkActionType">
 
@@ -50,13 +50,13 @@
       <div class="alert alert-info text-center">No refund applications found.</div>
     @else
       <div class="mb-3 d-flex justify-content-end gap-2">
-        @if(session('admin_role') === 'approver' || session('admin_role') === 'superadmin')
+        @if(session('admin_role') === 'approver')
           <button type="button" class="btn btn-success" onclick="submitBulkAction('approve')">
             <i class="bi bi-check-circle"></i> Approve Selected
           </button>
         @endif
 
-        @if(session('admin_role') === 'disburser' || session('admin_role') === 'superadmin')
+        @if(session('admin_role') === 'disburser')
           <button type="button" class="btn btn-info text-white" onclick="submitBulkAction('disburse')">
             <i class="bi bi-cash-coin"></i> Disburse Selected
           </button>
@@ -84,8 +84,8 @@
                 <td>
                   @php $role = session('admin_role'); @endphp
                   @if (
-                    ($application->status === 'submitted' && in_array($role, ['approver', 'superadmin'])) ||
-                    ($application->status === 'approved' && in_array($role, ['disburser', 'superadmin']))
+                    ($application->status === 'submitted' && $role === 'approver') ||
+                    ($application->status === 'approved' && $role === 'disburser')
                   )
                     <input type="checkbox" name="ids[]" value="{{ $application->id }}">
                   @endif
@@ -128,18 +128,18 @@
                       <i class="bi bi-eye"></i> View
                     </a>
 
-                    @if ($application->status === 'submitted' && in_array($role, ['approver', 'superadmin']))
+                    @if ($application->status === 'submitted' && $role === 'approver')
                       <form action="{{ route('admin.update', $application->id) }}" method="POST" class="d-flex gap-1">
                         @csrf
-                        
+                
                         <button name="action" value="approve" class="btn btn-success btn-sm w-100">Approve</button>
                         <button name="action" value="decline" class="btn btn-danger btn-sm w-100">Decline</button>
                       </form>
 
-                    @elseif ($application->status === 'approved' && in_array($role, ['disburser', 'superadmin']))
+                    @elseif ($application->status === 'approved' && $role === 'disburser')
                       <form action="{{ route('admin.mark.disbursed', $application->id) }}" method="POST" class="w-100">
                         @csrf
-                        
+          
                         <button class="btn btn-info btn-sm w-100" onclick="return confirm('Mark as disbursed?')">
                           <i class="bi bi-cash-coin"></i> Disburse
                         </button>

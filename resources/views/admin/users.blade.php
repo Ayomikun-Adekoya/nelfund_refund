@@ -123,7 +123,8 @@
             <select class="form-select" id="role" name="role" required>
               <option value="viewer">Viewer</option>
               <option value="approver">Approver</option>
-              <option value="disburser">Disburser</option> <!-- ✅ New Role Added -->
+              <option value="disburser">Disburser</option> 
+              <option value="superadmin">Super Admin</option>
             </select>
           </div>
 

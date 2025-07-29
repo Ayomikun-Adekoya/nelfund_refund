@@ -1,3 +1,4 @@
+{{-- resources/views/admin/report.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +16,40 @@
 <div class="container mt-5">
   <h4 class="text-primary mb-4"><i class="bi bi-bar-chart-fill me-2"></i>Loan Refund Reports</h4>
 
+  {{-- Sort codes --}}
+  @php
+    $sortCodes = [
+      'Access Bank plc' => '044',
+      'Alpha Morgan Bank' => '108',
+      'Citibank Nigeria Ltd' => '023',
+      'Ecobank Nigeria Plc' => '050',
+      'Fidelity Bank Plc' => '070',
+      'First Bank Nigeria Ltd' => '011',
+      'First City Monument Bank Plc' => '214',
+      'Globus Bank Ltd' => '103',
+      'Guaranty Trust Bank Plc' => '058',
+      'Jaiz Bank Plc' => '301',
+      'Keystone Bank Ltd' => '082',
+      'Lotus Bank' => '303',
+      'Nova Commercial Bank Ltd' => '461',
+      'Polaris Bank Plc' => '076',
+      'Premium Trust Bank' => '105',
+      'Providus Bank Ltd' => '101',
+      'Signature Bank Ltd' => '106',
+      'Stanbic IBTC Bank Plc' => '221',
+      'Standard Chartered Bank Nigeria Ltd' => '068',
+      'Sterling Bank' => '232',
+      'SunTrust Bank Nigeria Ltd' => '100',
+      'Taj Bank' => '626',
+      'Titan Trust Bank Ltd' => '102',
+      'Union Bank of Nigeria Plc' => '032',
+      'United Bank for Africa Plc' => '033',
+      'Unity Bank Plc' => '215',
+      'Wema Bank Plc' => '035',
+      'Zenith Bank Plc' => '057',
+    ];
+  @endphp
+
   {{-- Filter Form --}}
   <form method="GET" class="row g-3 mb-4">
     <div class="col-md-4">
@@ -26,6 +61,7 @@
         <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
         <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
         <option value="declined" {{ request('status') == 'declined' ? 'selected' : '' }}>Declined</option>
+        <option value="disbursed" {{ request('status') == 'disbursed' ? 'selected' : '' }}>Disbursed</option>
       </select>
     </div>
     <div class="col-md-3">
@@ -43,10 +79,9 @@
     <a href="{{ route('admin.report.export.pdf') }}" class="btn btn-outline-danger">
       <i class="bi bi-file-earmark-pdf-fill me-1"></i> Export PDF
     </a>
-<a href="{{ route('admin.report.export.excel', request()->all()) }}" class="btn btn-outline-success">
-  <i class="bi bi-file-earmark-excel-fill me-1"></i> Export Excel
-</a>
-
+    <a href="{{ route('admin.report.export.excel', request()->all()) }}" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-excel-fill me-1"></i> Export Excel
+    </a>
   </div>
 
   {{-- Results Table --}}
@@ -61,16 +96,19 @@
             <th>Matric No</th>
             <th>Department</th>
             <th>Level</th>
-            <th>Faculty</th>
-            <th>Loan Amount</th>
-            <th>Levies</th>
-            <th>Amount Paid</th>
-            <th>Tracking ID</th>
+            <th>Refund Due</th>
+            <th>NELFUND Tracking ID</th>
             <th>Account Name</th>
             <th>Account No</th>
             <th>Bank</th>
+            <th>Sort Code</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Hostel</th>
             <th>Status</th>
-            <th>Submitted On</th>
+            <th>Submitted At</th>
+            <th>Approved At</th>
+            <th>Disbursed At</th>
           </tr>
         </thead>
         <tbody>
@@ -80,20 +118,23 @@
               <td>{{ $application->student->matric_number }}</td>
               <td>{{ $application->student->department }}</td>
               <td>{{ $application->student->level }}</td>
-              <td>{{ $application->student->faculty }}</td>
-              <td>₦{{ number_format($application->student->loanamount, 2) }}</td>
-              <td>₦{{ number_format($application->student->levies, 2) }}</td>
-              <td>₦{{ number_format($application->student->amountpaid, 2) }}</td>
+              <td>₦{{ number_format($application->student->refund_amount, 2) }}</td>
               <td>{{ $application->tracking_id }}</td>
               <td>{{ $application->account_name }}</td>
               <td>{{ $application->account_number }}</td>
               <td>{{ $application->bank_name }}</td>
+              <td>{{ $sortCodes[$application->bank_name] ?? 'N/A' }}</td>
+              <td>{{ $application->phone }}</td>
+              <td>{{ $application->email }}</td>
+              <td>{{ $application->hostel }}</td>
               <td>
-                <span class="badge bg-{{ $application->status === 'approved' ? 'success' : ($application->status === 'declined' ? 'danger' : 'warning text-dark') }}">
+                <span class="badge bg-{{ $application->status === 'approved' ? 'success' : ($application->status === 'declined' ? 'danger' : ($application->status === 'disbursed' ? 'primary' : 'warning text-dark')) }}">
                   {{ ucfirst($application->status) }}
                 </span>
               </td>
-              <td>{{ $application->created_at->format('d M Y, h:i A') }}</td>
+              <td>{{ $application->submitted_at ? $application->submitted_at->format('d M Y, h:i A') : '-' }}</td>
+              <td>{{ $application->approved_at ? $application->approved_at->format('d M Y, h:i A') : '-' }}</td>
+              <td>{{ $application->disbursed_at ? $application->disbursed_at->format('d M Y, h:i A') : '-' }}</td>
             </tr>
           @endforeach
         </tbody>

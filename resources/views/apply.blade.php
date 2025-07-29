@@ -72,8 +72,8 @@
           </div>
 
           <div class="mb-3">
-            <label for="tracking_id" class="form-label">Tracking ID</label>
-            <input type="text" class="form-control" name="tracking_id" id="tracking_id" placeholder="e.g. REF-1234XYZ" required>
+            <label for="tracking_id" class="form-label">NELFUND Tracking ID</label>
+            <input type="text" class="form-control" name="tracking_id" id="tracking_id" placeholder="e.g. A1AA11A11" required>
           </div>
 
           <button type="submit" class="btn btn-primary">Check Eligibility</button>
@@ -105,6 +105,41 @@
               <input type="text" class="form-control" value="₦{{ number_format($student->amountpaid, 2) }}" readonly>
             </div>
           </div>
+  <div class="mb-3">
+  <label for="bank_name" class="form-label">Bank Name</label>
+  <select class="form-select" name="bank_name" id="bank_name" required>
+    <option value="">-- Select a Bank --</option>
+    <option value="Access Bank plc">Access Bank plc</option>
+    <option value="Alpha Morgan Bank">Alpha Morgan Bank</option>
+    <option value="Citibank Nigeria Ltd">Citibank Nigeria Ltd</option>
+    <option value="Ecobank Nigeria Plc">Ecobank Nigeria Plc</option>
+    <option value="Fidelity Bank Plc">Fidelity Bank Plc</option>
+    <option value="First Bank Nigeria Ltd">First Bank Nigeria Ltd</option>
+    <option value="First City Monument Bank Plc">First City Monument Bank Plc</option>
+    <option value="Globus Bank Ltd">Globus Bank Ltd</option>
+    <option value="Guaranty Trust Bank Plc">Guaranty Trust Bank Plc</option>
+    <option value="Jaiz Bank Plc">Jaiz Bank Plc</option>
+    <option value="Keystone Bank Ltd">Keystone Bank Ltd</option>
+    <option value="Lotus Bank">Lotus Bank</option>
+    <option value="Nova Commercial Bank Ltd">Nova Commercial Bank Ltd</option>
+    <option value="Polaris Bank Plc">Polaris Bank Plc</option>
+    <option value="Premium Trust Bank">Premium Trust Bank</option>
+    <option value="Providus Bank Ltd">Providus Bank Ltd</option>
+    <option value="Signature Bank Ltd">Signature Bank Ltd</option>
+    <option value="Stanbic IBTC Bank Plc">Stanbic IBTC Bank Plc</option>
+    <option value="Standard Chartered Bank Nigeria Ltd">Standard Chartered Bank Nigeria Ltd</option>
+    <option value="Sterling Bank">Sterling Bank</option>
+    <option value="SunTrust Bank Nigeria Ltd">SunTrust Bank Nigeria Ltd</option>
+    <option value="Taj Bank">Taj Bank</option>
+    <option value="Titan Trust Bank Ltd">Titan Trust Bank Ltd</option>
+    <option value="Union Bank of Nigeria Plc">Union Bank of Nigeria Plc</option>
+    <option value="United Bank for Africa Plc">United Bank for Africa Plc</option>
+    <option value="Unity Bank Plc">Unity Bank Plc</option>
+    <option value="Wema Bank Plc">Wema Bank Plc</option>
+    <option value="Zenith Bank Plc">Zenith Bank Plc</option>
+  </select>
+</div>
+
 
           <div class="mb-3">
             <label for="account_name" class="form-label">Account Name</label>
@@ -149,8 +184,18 @@
             <label for="account_number" class="form-label">Account Number</label>
             <input type="text" class="form-control" name="account_number" id="account_number" required>
           </div>
+<div class="mb-3">
+  <label for="email" class="form-label">Email Address</label>
+  <input type="email" class="form-control" name="email" id="email" required>
+</div>
 
+ 
           <div class="mb-3">
+  <label for="phone" class="form-label">Phone Number</label>
+  <input type="text" class="form-control" name="phone" id="phone" required>
+</div>
+
+         <div class="mb-3">
             <label for="proof_file" class="form-label">Upload Proof of Payment (PDF, JPG, PNG)</label>
             <input type="file" class="form-control" name="proof_file" id="proof_file" accept=".pdf,.jpg,.jpeg,.png" required>
           </div>

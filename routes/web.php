@@ -37,8 +37,8 @@ Route::prefix('admin')->middleware('web')->group(function () {
 
     // 🔸 Dashboard & Refund Management
     Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::patch('/update/{id}', [AdminController::class, 'updateStatus'])->name('admin.update');
-    Route::patch('/disburse/{id}', [AdminController::class, 'markAsDisbursed'])->name('admin.mark.disbursed');
+    Route::post('/update/{id}', [AdminController::class, 'updateStatus'])->name('admin.update');
+    Route::post('/disburse/{id}', [AdminController::class, 'markAsDisbursed'])->name('admin.mark.disbursed');
     Route::get('/view/{id}', [AdminController::class, 'view'])->name('admin.view');
 
     // 🔸 Admin Users Management

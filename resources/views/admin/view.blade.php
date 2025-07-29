@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!-- resources/views/admin/view.blade.php -->
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -25,6 +26,9 @@
     <li class="list-group-item"><strong>Department:</strong> {{ $application->student->department }}</li>
     <li class="list-group-item"><strong>Level:</strong> {{ $application->student->level }}</li>
     <li class="list-group-item"><strong>Faculty:</strong> {{ $application->student->faculty }}</li>
+    <li class="list-group-item"><strong>Phone:</strong> {{ $application->phone }}</li>
+    <li class="list-group-item"><strong>Email:</strong> {{ $application->email }}</li>
+    <li class="list-group-item"><strong>Hostel:</strong> {{ $application->hostel }}</li>
 
     {{-- Grouped Row for Financial Fields --}}
     <li class="list-group-item">
@@ -38,10 +42,11 @@
 
   <h5 class="mb-3">Application Details</h5>
   <ul class="list-group mb-4">
-    <li class="list-group-item"><strong>Tracking ID:</strong> {{ $application->tracking_id }}</li>
+    <li class="list-group-item"><strong>NELFUND Tracking ID:</strong> {{ $application->tracking_id }}</li>
     <li class="list-group-item"><strong>Account Name:</strong> {{ $application->account_name }}</li>
     <li class="list-group-item"><strong>Account Number:</strong> {{ $application->account_number }}</li>
     <li class="list-group-item"><strong>Bank:</strong> {{ $application->bank_name }}</li>
+    
     <li class="list-group-item"><strong>Status:</strong>
       @switch($application->status)
         @case('approved')
@@ -57,16 +62,30 @@
           <span class="badge bg-warning text-dark">Submitted</span>
       @endswitch
     </li>
-    <li class="list-group-item"><strong>Submitted On:</strong> {{ $application->created_at->format('d M Y, h:i A') }}</li>
+
+    <li class="list-group-item">
+      <strong>
+        @if($application->status === 'disbursed')
+          Disbursed On:
+        @elseif($application->status === 'approved')
+          Approved On:
+        @elseif($application->status === 'submitted')
+          Submitted On:
+        @else
+          Updated On:
+        @endif
+      </strong>
+      {{ $application->{$application->status . '_at'} ? $application->{$application->status . '_at'}->format('d M Y, h:i A') : '-' }}
+    </li>
   </ul>
 
   {{-- Action Buttons --}}
   @php $role = session('admin_role'); @endphp
 
-  @if($application->status === 'submitted' && $role === 'approver')
+  @if($application->status === 'submitted' && in_array($role, ['approver', 'superadmin']))
     <form action="{{ route('admin.update', $application->id) }}" method="POST" class="d-flex gap-3">
       @csrf
-      @method('PATCH')
+      
       <button type="submit" name="action" value="approve" class="btn btn-success">
         <i class="bi bi-check-circle-fill me-1"></i> Approve
       </button>
@@ -75,10 +94,10 @@
       </button>
     </form>
 
-  @elseif($application->status === 'approved' && $role === 'disburser')
+  @elseif($application->status === 'approved' && in_array($role, ['disburser', 'superadmin']))
     <form action="{{ route('admin.mark.disbursed', $application->id) }}" method="POST" class="mt-3">
       @csrf
-      @method('PATCH')
+      
       <button class="btn btn-info" onclick="return confirm('Mark this application as disbursed?')">
         <i class="bi bi-cash-coin me-1"></i> Mark as Disbursed
       </button>

@@ -7,16 +7,15 @@ use Illuminate\Support\Str;
 use App\Models\EligibleStudent;
 use App\Models\RefundApplication;
 use App\Models\LoanApproval;
+use Carbon\Carbon;
 
 class RefundController extends Controller
 {
-    // Show the check-status page
     public function showCheckForm()
     {
         return view('check-status');
     }
 
-    // Handle tracking ID and matric number from check-status page
     public function submitCheckForm(Request $request)
     {
         $request->validate([
@@ -47,7 +46,6 @@ class RefundController extends Controller
         return redirect()->route('refund.apply', ['student' => $student->id]);
     }
 
-    // ✅ Updated: verify tracking ID and allow reapplication if last was declined
     public function verifyTrackingId(Request $request)
     {
         $request->validate([
@@ -69,9 +67,7 @@ class RefundController extends Controller
             return back()->with('error', 'You are not eligible for a refund.');
         }
 
-        $application = RefundApplication::where('eligible_student_id', $student->id)
-                                        ->latest()
-                                        ->first();
+        $application = RefundApplication::where('eligible_student_id', $student->id)->latest()->first();
 
         if ($application && $application->status !== 'declined') {
             return redirect()->route('refund.status', ['student' => $student->id])
@@ -81,14 +77,12 @@ class RefundController extends Controller
         return view('apply', compact('student'));
     }
 
-    // Show application form if passed from status check
     public function showApplicationForm($studentId)
     {
         $student = EligibleStudent::findOrFail($studentId);
         return view('apply', compact('student'));
     }
 
-    // ✅ Updated: prevent submitting multiple "submitted" applications
     public function submitApplication(Request $request, $studentId)
     {
         $request->validate([
@@ -96,9 +90,11 @@ class RefundController extends Controller
             'account_number' => 'required|string|max:20',
             'bank_name' => 'required|string|max:255',
             'proof_file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'hostel' => 'required|string|max:255',
         ]);
 
-        // Block repeat submission if one is already pending
         $existing = RefundApplication::where('eligible_student_id', $studentId)
                                      ->where('status', 'submitted')
                                      ->first();
@@ -108,8 +104,14 @@ class RefundController extends Controller
                 ->with('error', 'You already have a pending application.');
         }
 
+        $student = EligibleStudent::findOrFail($studentId);
+        $loan = LoanApproval::where('matric', $student->matric_number)->first();
+
+        if (!$loan) {
+            return back()->with('error', 'Loan record not found. Cannot fetch tracking ID.');
+        }
+
         $filePath = $request->file('proof_file')->store('proofs', 'public');
-        $trackingId = 'REF-' . strtoupper(Str::random(10));
 
         RefundApplication::create([
             'eligible_student_id' => $studentId,
@@ -118,10 +120,14 @@ class RefundController extends Controller
             'bank_name' => $request->bank_name,
             'proof_file' => $filePath,
             'status' => 'submitted',
-            'tracking_id' => $trackingId,
+            'tracking_id' => $loan->tracking_id,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'hostel' => $request->hostel,
+            'submitted_at' => Carbon::now(), // ✅ timestamp for submission
         ]);
 
         return redirect()->route('refund.status', $studentId)
-            ->with('success', "Application submitted successfully! Your Tracking ID is: $trackingId");
+            ->with('success', "Application submitted successfully!");
     }
 }
